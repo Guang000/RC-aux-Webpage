@@ -444,22 +444,10 @@ h3 {
   box-shadow: 0 22px 58px rgba(14, 20, 18, 0.18);
 }
 
-.paper-figure.tall {
+.temporal-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.28fr);
-  align-items: stretch;
-}
-
-.paper-figure.tall img {
-  max-height: 760px;
-  object-fit: contain;
-}
-
-.paper-figure.tall figcaption {
-  display: flex;
-  align-items: center;
-  border-top: 0;
-  border-left: 1px solid rgba(17, 21, 17, 0.1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .note {
@@ -662,13 +650,8 @@ code {
     grid-template-columns: 1fr;
   }
 
-  .paper-figure.tall {
+  .temporal-grid {
     grid-template-columns: 1fr;
-  }
-
-  .paper-figure.tall figcaption {
-    border-top: 1px solid rgba(17, 21, 17, 0.1);
-    border-left: 0;
   }
 
   .section-head.split {

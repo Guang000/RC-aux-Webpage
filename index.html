@@ -119,10 +119,16 @@
             <img src="assets/trajectory-overlays.jpg" alt="Trajectory overlays comparing LeWM and RC-aux on wall and tworoom examples.">
             <figcaption>Trajectory overlays show RC-aux reducing shortcut-like plans and producing paths that better respect obstacles and goals.</figcaption>
           </figure>
-          <figure class="paper-figure tall">
-            <img src="assets/temporal-wall-cube.jpg" alt="Temporal comparison of LeWM and RC-aux rollouts on Wall and Cube tasks.">
-            <figcaption>Temporal rollouts compare planning behavior at start, intermediate, final, and goal states for Wall and Cube tasks.</figcaption>
-          </figure>
+          <div class="temporal-grid">
+            <figure class="paper-figure">
+              <img src="assets/temporal-wall.jpg" alt="Temporal comparison of LeWM and RC-aux rollouts on Wall tasks.">
+              <figcaption>Wall temporal rollouts show RC-aux moving through reachable corridors instead of taking latent shortcuts through obstacles.</figcaption>
+            </figure>
+            <figure class="paper-figure">
+              <img src="assets/temporal-cube.jpg" alt="Temporal comparison of LeWM and RC-aux rollouts on Cube manipulation tasks.">
+              <figcaption>Cube temporal rollouts compare LeWM and RC-aux behavior from start through intermediate states to the goal.</figcaption>
+            </figure>
+          </div>
         </div>
       </section>
 
