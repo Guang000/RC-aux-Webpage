@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Project page for Predictive but Not Plannable: RC-aux for Latent World Models.">
+    <meta property="og:title" content="RC-aux for Latent World Models">
+    <meta property="og:description" content="Reachability-Correction auxiliary objective for planning-aligned latent world models.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0b1110">
+    <title>RC-aux | Predictive but Not Plannable</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="RC-aux home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>RC-aux</span>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#method">Method</a>
+        <a href="#visualizations">Visuals</a>
+        <a href="#results">Results</a>
+        <a href="#code">Code</a>
+        <a href="#citation">Citation</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <canvas id="latent-canvas" aria-hidden="true"></canvas>
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <p class="eyebrow">arXiv:2605.07278</p>
+          <h1 id="hero-title">Predictive but Not Plannable</h1>
+          <p class="subtitle">RC-aux makes reconstruction-free latent world models more useful for long-horizon planning by teaching the representation what is reachable under a finite action budget.</p>
+          <div class="author-line">
+            <a href="https://github.com/biubiu116" target="_blank" rel="noreferrer">Wenyuan Li</a>
+            <a href="https://www-lmd.ist.hokudai.ac.jp/member/guang-li/" target="_blank" rel="noreferrer">Guang Li</a>
+            <a href="https://www-lmd.ist.hokudai.ac.jp/member/keisuke-maeda/" target="_blank" rel="noreferrer">Keisuke Maeda</a>
+            <a href="https://www-lmd.ist.hokudai.ac.jp/member/takahiro-ogawa/" target="_blank" rel="noreferrer">Takahiro Ogawa</a>
+            <a href="https://www-lmd.ist.hokudai.ac.jp/member/miki-haseyama/" target="_blank" rel="noreferrer">Miki Haseyama</a>
+          </div>
+          <p class="affiliation">Hokkaido University</p>
+          <div class="hero-actions" aria-label="Project links">
+            <a class="button primary" href="https://arxiv.org/abs/2605.07278">Paper</a>
+            <a class="button secondary" href="https://github.com/Guang000/RC-aux">Code</a>
+            <a class="button tertiary" href="https://huggingface.co/biubiu116/RC-aux">Checkpoints</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section intro" aria-labelledby="abstract-title">
+        <div class="section-grid">
+          <div>
+            <p class="kicker">Core idea</p>
+            <h2 id="abstract-title">A latent model can predict locally and still fail the planner globally.</h2>
+          </div>
+          <div class="prose">
+            <p>Latent world models are often trained with local predictive supervision, then deployed for goal-directed search over longer horizons. RC-aux targets that mismatch with lightweight supervision that preserves the LeWorldModel backbone while adding planning-aligned structure.</p>
+            <p>The objective combines multi-horizon open-loop prediction, budget-conditioned reachability supervision, and temporal hard negatives. At test time, the learned reachability signal can also guide the planner toward trajectories that are goal-directed and attainable.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="method" class="section method" aria-labelledby="method-title">
+        <div class="section-head">
+          <p class="kicker">Method</p>
+          <h2 id="method-title">Two corrections for planning alignment</h2>
+        </div>
+        <div class="method-layout">
+          <article class="method-card">
+            <span class="step">01</span>
+            <h3>Time axis</h3>
+            <p>Multi-horizon open-loop prediction trains the latent dynamics beyond one-step consistency, exposing the model to the rollout structure used by MPC-style search.</p>
+          </article>
+          <article class="method-card">
+            <span class="step">02</span>
+            <h3>Space axis</h3>
+            <p>Budget-conditioned reachability supervision encourages the latent space to separate states that are eventually reachable from those reachable within the current planning horizon.</p>
+          </article>
+          <article class="method-card accent">
+            <span class="step">03</span>
+            <h3>Planning signal</h3>
+            <p>A reachability-aware planner can use the learned signal as an auxiliary cost, favoring candidates that stay both goal-directed and feasible under the available budget.</p>
+          </article>
+        </div>
+        <div class="pipeline" aria-label="RC-aux training and planning pipeline">
+          <div class="pipe-node">Pixels</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-node">Latent state</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-node wide">Open-loop rollout</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-node wide">Reachability head</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-node strong">Planner</div>
+        </div>
+        <figure class="paper-figure wide-figure">
+          <img src="assets/method-overview.jpg" alt="RC-aux method overview showing time alignment, space alignment, and reachability-aware planning.">
+          <figcaption>Overview of RC-aux. Training aligns rollout time and reachability space, while planning favors rollouts that are both close to the goal and reachable.</figcaption>
+        </figure>
+      </section>
+
+      <section id="visualizations" class="section visuals" aria-labelledby="visuals-title">
+        <div class="section-head split">
+          <div>
+            <p class="kicker">Visualizations</p>
+            <h2 id="visuals-title">Why Euclidean latent distance is not enough</h2>
+          </div>
+          <p class="note">The reference page uses large paper figures as the backbone of the story; here the figures are arranged to move from the latent failure case to qualitative rollouts.</p>
+        </div>
+        <div class="visual-stack">
+          <figure class="paper-figure">
+            <img src="assets/latent-shortcuts.jpg" alt="Illustration of a blocked shortcut in state space and a misleading shortcut in latent space.">
+            <figcaption>Latent shortcuts can look close under L2 distance while being unreachable within the action budget.</figcaption>
+          </figure>
+          <figure class="paper-figure">
+            <img src="assets/trajectory-overlays.jpg" alt="Trajectory overlays comparing LeWM and RC-aux on wall and tworoom examples.">
+            <figcaption>Trajectory overlays show RC-aux reducing shortcut-like plans and producing paths that better respect obstacles and goals.</figcaption>
+          </figure>
+          <figure class="paper-figure tall">
+            <img src="assets/temporal-wall-cube.jpg" alt="Temporal comparison of LeWM and RC-aux rollouts on Wall and Cube tasks.">
+            <figcaption>Temporal rollouts compare planning behavior at start, intermediate, final, and goal states for Wall and Cube tasks.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="results" class="section results" aria-labelledby="results-title">
+        <div class="section-head split">
+          <div>
+            <p class="kicker">Reported results</p>
+            <h2 id="results-title">Gains across goal-conditioned pixel-control tasks</h2>
+          </div>
+          <p class="note">Mean +/- std over five fixed evaluation groups of 50 episodes. Matched deltas compare against LeWM-cont except Wall, which compares against local LeWM.</p>
+        </div>
+        <div class="result-grid">
+          <article class="score-card best">
+            <span>Wall</span>
+            <strong>+33.2</strong>
+            <p>50.4 to 83.6</p>
+          </article>
+          <article class="score-card">
+            <span>TwoRoom</span>
+            <strong>+9.2</strong>
+            <p>88.8 to 98.0</p>
+          </article>
+          <article class="score-card">
+            <span>Reacher</span>
+            <strong>+4.4</strong>
+            <p>82.8 to 87.2</p>
+          </article>
+          <article class="score-card">
+            <span>Cube</span>
+            <strong>+3.2</strong>
+            <p>72.8 to 76.0</p>
+          </article>
+        </div>
+        <figure class="paper-figure wide-figure">
+          <img src="assets/baseline-results.jpg" alt="Bar chart comparing RC-aux against DINO-WM, PLDM, GCBC, IQL, IVL, LeWM, and LeWM-cont across five tasks.">
+          <figcaption>Success-rate comparison across TwoRoom, Reacher, Push-T, Wall, and Cube. RC-aux improves the LeWM-style planning baseline most strongly on obstacle-heavy Wall.</figcaption>
+        </figure>
+        <div class="table-wrap" role="region" aria-label="Main reported results table" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>LeWM</th>
+                <th>LeWM-cont</th>
+                <th>RC-aux</th>
+                <th>Matched delta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>TwoRoom</th>
+                <td>88.8 +/- 3.0</td>
+                <td>88.8 +/- 3.0</td>
+                <td class="rc">98.0 +/- 1.4</td>
+                <td class="gain">+9.2</td>
+              </tr>
+              <tr>
+                <th>Reacher</th>
+                <td>81.2 +/- 7.9</td>
+                <td>82.8 +/- 7.2</td>
+                <td class="rc">87.2 +/- 6.4</td>
+                <td class="gain">+4.4</td>
+              </tr>
+              <tr>
+                <th>Push-T</th>
+                <td>90.4 +/- 3.0</td>
+                <td>91.2 +/- 3.9</td>
+                <td class="rc">90.8 +/- 3.3</td>
+                <td>-0.4</td>
+              </tr>
+              <tr>
+                <th>Wall</th>
+                <td>50.4 +/- 6.5</td>
+                <td>--</td>
+                <td class="rc">83.6 +/- 3.6</td>
+                <td class="gain">+33.2</td>
+              </tr>
+              <tr>
+                <th>Cube</th>
+                <td>72.4 +/- 5.9</td>
+                <td>72.8 +/- 5.2</td>
+                <td class="rc">76.0 +/- 7.5</td>
+                <td class="gain">+3.2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="code" class="section code-section" aria-labelledby="code-title">
+        <div class="section-grid">
+          <div>
+            <p class="kicker">Code</p>
+            <h2 id="code-title">Train, evaluate, and extend RC-aux</h2>
+            <p class="section-copy">The repository includes pixel-control training, MPC evaluation, RC-aux objectives, configs, result summaries, and a LIBERO-Goal extension.</p>
+          </div>
+          <div class="code-panel" aria-label="Example evaluation command">
+            <div class="panel-top">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <pre><code>python eval.py --config-name=tworoom.yaml \
+  cache_dir="$STABLEWM_HOME" \
+  policy=tworoom_rcaux/rcaux_tworoom \
+  +planner_override.use_reachability_cost=true \
+  +planner_override.reachability_cost_weight=0.85</code></pre>
+          </div>
+        </div>
+        <div class="repo-strip">
+          <a href="https://github.com/Guang000/RC-aux">GitHub repository</a>
+          <a href="https://arxiv.org/abs/2605.07278">arXiv paper</a>
+          <a href="https://huggingface.co/biubiu116/RC-aux">Released checkpoint</a>
+        </div>
+      </section>
+
+      <section id="citation" class="section citation" aria-labelledby="citation-title">
+        <div class="section-head split">
+          <div>
+            <p class="kicker">Citation</p>
+            <h2 id="citation-title">Reference the paper</h2>
+          </div>
+          <button class="copy-button" type="button" data-copy="#bibtex">Copy BibTeX</button>
+        </div>
+        <pre id="bibtex" class="bibtex"><code>@article{li2026predictive,
+  title={Predictive but Not Plannable: RC-aux for Latent World Models},
+  author={Li, Wenyuan and Li, Guang and Maeda, Keisuke and Ogawa, Takahiro and Haseyama, Miki},
+  journal={arXiv preprint arXiv:2605.07278},
+  year={2026}
+}</code></pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>RC-aux builds on LeWorldModel, stable-worldmodel, stable-pretraining, DINO-WM, and LIBERO.</p>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
